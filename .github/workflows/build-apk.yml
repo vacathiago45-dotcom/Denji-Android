@@ -31,7 +31,7 @@ jobs:
             exit 1
           fi
           cd "$PROJECT_ROOT"
-          npm install
+          npm install --legacy-peer-deps
           
       - name: Compilar APK
         working-directory: project
