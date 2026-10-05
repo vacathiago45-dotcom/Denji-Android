@@ -1,0 +1,43 @@
+name: Build Denji APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar proyecto Denji
+        run: |
+          curl -L "https://raw.githubusercontent.com/vacathiago45-dotcom/Denji-Android/main/denji-android-project.zip" -o project.zip
+          unzip -q project.zip -d project
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Compilar APK
+        working-directory: project
+        run: |
+          GRADLEW="$(find . -type f -name gradlew -print -quit)"
+          if [ -z "$GRADLEW" ]; then
+            echo "gradlew no encontrado"
+            exit 1
+          fi
+          ANDROID_DIR="$(dirname "$GRADLEW")"
+          cd "$ANDROID_DIR"
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: denji-debug-apk
+          path: project/**/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
